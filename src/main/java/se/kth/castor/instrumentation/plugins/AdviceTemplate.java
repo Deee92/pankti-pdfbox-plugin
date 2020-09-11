@@ -25,6 +25,7 @@ public interface AdviceTemplate {
         String receivingObjectFilePath = "/home/user/pdfbox-object-data/" + path + "-receiving.xml";
         String paramObjectsFilePath = "/home/user/pdfbox-object-data/" + path + "-params.xml";
         String returnedObjectFilePath = "/home/user/pdfbox-object-data/" + path + "-returned.xml";
-        return new String[]{receivingObjectFilePath, paramObjectsFilePath, returnedObjectFilePath};
+        String invocationCountFilePath = "/home/user/pdfbox-object-data/" + path + "-count.txt";
+        return new String[]{receivingObjectFilePath, paramObjectsFilePath, returnedObjectFilePath, invocationCountFilePath};
     }
 }

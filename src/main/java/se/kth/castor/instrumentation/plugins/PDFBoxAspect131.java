@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 public class PDFBoxAspect131 {
+    private static int INVOCATION_COUNT;
     @Pointcut(className = "org.apache.pdfbox.pdmodel.graphics.color.PDCalGray",
             methodName = "getDefaultDecode",
             methodParameterTypes = {"int"},
@@ -18,6 +19,7 @@ public class PDFBoxAspect131 {
         private static String receivingObjectFilePath;
         private static String paramObjectsFilePath;
         private static String returnedObjectFilePath;
+        private static String invocationCountFilePath;
         private static Logger logger = Logger.getLogger(PureMethodAdvice.class);
         private static final String methodFQN = PureMethodAdvice.class.getAnnotation(Pointcut.class).className() + "."
                 + PureMethodAdvice.class.getAnnotation(Pointcut.class).methodName();
@@ -28,6 +30,7 @@ public class PDFBoxAspect131 {
             receivingObjectFilePath = fileNames[0];
             paramObjectsFilePath = fileNames[1];
             returnedObjectFilePath = fileNames[2];
+            invocationCountFilePath = fileNames[3];
         }
 
         public static synchronized void writeObjectXMLToFile(Object objectToWrite, String objectFilePath) {
@@ -43,14 +46,26 @@ public class PDFBoxAspect131 {
             }
         }
 
+        public static synchronized void writeInvocationCountToFile() {
+            try {
+                FileWriter objectFileWriter = new FileWriter(invocationCountFilePath);
+                objectFileWriter.write("Invocation count for " + methodFQN + " : " + INVOCATION_COUNT);
+                objectFileWriter.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         @OnBefore
         public static TraceEntry onBefore(OptionalThreadContext context,
                                           @BindReceiver Object receivingObject,
                                           @BindParameterArray Object parameterObjects,
                                           @BindMethodName String methodName) {
-            setup();
-            writeObjectXMLToFile(receivingObject, receivingObjectFilePath);
-            writeObjectXMLToFile(parameterObjects, paramObjectsFilePath);
+            if (INVOCATION_COUNT < 50) {
+                setup();
+                writeObjectXMLToFile(receivingObject, receivingObjectFilePath);
+                writeObjectXMLToFile(parameterObjects, paramObjectsFilePath);
+            }
             MessageSupplier messageSupplier = MessageSupplier.create(
                     "className: {}, methodName: {}",
                     PureMethodAdvice.class.getAnnotation(Pointcut.class).className(),
@@ -62,7 +77,11 @@ public class PDFBoxAspect131 {
         @OnReturn
         public static void onReturn(@BindReturn Object returnedObject,
                                     @BindTraveler TraceEntry traceEntry) {
-            writeObjectXMLToFile(returnedObject, returnedObjectFilePath);
+            if (INVOCATION_COUNT < 50) {
+                writeObjectXMLToFile(returnedObject, returnedObjectFilePath);
+            }
+            INVOCATION_COUNT++;
+            writeInvocationCountToFile();
             traceEntry.end();
         }
 
