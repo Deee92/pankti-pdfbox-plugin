@@ -61,7 +61,7 @@ public class PDFBoxAspect29 {
                                           @BindReceiver Object receivingObject,
                                           @BindParameterArray Object parameterObjects,
                                           @BindMethodName String methodName) {
-            if (INVOCATION_COUNT < 50) {
+            if (INVOCATION_COUNT < 5) {
                 setup();
                 writeObjectXMLToFile(receivingObject, receivingObjectFilePath);
                 writeObjectXMLToFile(parameterObjects, paramObjectsFilePath);
@@ -77,7 +77,7 @@ public class PDFBoxAspect29 {
         @OnReturn
         public static void onReturn(@BindReturn Object returnedObject,
                                     @BindTraveler TraceEntry traceEntry) {
-            if (INVOCATION_COUNT < 50) {
+            if (INVOCATION_COUNT < 5) {
                 writeObjectXMLToFile(returnedObject, returnedObjectFilePath);
             }
             INVOCATION_COUNT++;

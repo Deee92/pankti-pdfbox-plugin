@@ -3,8 +3,10 @@ package se.kth.castor.instrumentation.plugins;
 import org.glowroot.agent.plugin.api.*;
 import org.glowroot.agent.plugin.api.weaving.*;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.StringReader;
 
 public class PDFBoxAspect93 {
     private static int INVOCATION_COUNT;
@@ -36,11 +38,16 @@ public class PDFBoxAspect93 {
         public static synchronized void writeObjectXMLToFile(Object objectToWrite, String objectFilePath) {
             try {
                 FileWriter objectFileWriter = new FileWriter(objectFilePath, true);
-                xStream.toXML(objectToWrite, objectFileWriter);
-                BufferedWriter bw = new BufferedWriter(objectFileWriter);
-                bw.newLine();
-                bw.flush();
-                bw.close();
+                String xml = xStream.toXML(objectToWrite);
+                xml = xml.replaceAll("(&#x)(\\w+;)", "&amp;#x$2");
+                BufferedReader reader = new BufferedReader(new StringReader(xml));
+                BufferedWriter writer = new BufferedWriter(objectFileWriter);
+                while ((xml = reader.readLine()) != null) {
+                    writer.write(xml);
+                    writer.newLine();
+                }
+                writer.flush();
+                writer.close();
             } catch (Exception e) {
                 logger.info("PDFBoxAspect" + COUNT);
             }
